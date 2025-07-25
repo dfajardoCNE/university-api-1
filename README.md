@@ -1,0 +1,146 @@
+<div align="center">
+
+# 🎓 Universidad API
+
+[![NestJS v9](https://img.shields.io/badge/NestJS_v9-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![PostgreSQL v14](https://img.shields.io/badge/PostgreSQL_v14-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Prisma v4](https://img.shields.io/badge/Prisma_v4-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![JWT v9](https://img.shields.io/badge/JWT_v9-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
+[![Swagger v6](https://img.shields.io/badge/Swagger_v6-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
+
+API RESTful para el sistema de gestión universitaria desarrollada con arquitectura limpia.
+
+[Características](#características) • [Instalación](#instalación) • [Uso](#ejecución) • [Documentación](#documentación-api) • [Licencia](#licencia)
+
+</div>
+
+## 📋 Descripción
+
+Este proyecto implementa una API RESTful para la gestión de una universidad, siguiendo los principios de Clean Architecture. Proporciona un sistema completo para administrar estudiantes, profesores, cursos, calificaciones y más.
+
+## 🛠️ Tecnologías
+
+| Categoría | Tecnologías | Versión |
+|-----------|-------------|--------|
+| **Backend** | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) | v16.x |
+| | ![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white) | v9.x |
+| **Base de datos** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white) | v14.x |
+| **ORM** | ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat-square&logo=prisma&logoColor=white) | v4.x |
+| **Autenticación** | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=json-web-tokens&logoColor=white) | v9.x |
+| **Documentación** | ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black) | v6.x |
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── domain/              # Reglas de negocio y entidades
+│   ├── entities/        # Entidades del dominio
+│   ├── repositories/    # Interfaces de repositorios
+│   └── use-cases/       # Casos de uso
+├── infrastructure/      # Implementaciones externas
+│   ├── database/        # Configuración de base de datos
+│   │   ├── prisma/      # Cliente y esquema de Prisma
+│   │   └── repositories/# Implementación de repositorios
+│   ├── auth/            # Servicios de autenticación
+│   └── services/        # Servicios externos
+├── application/         # Lógica de aplicación
+│   ├── dto/             # Objetos de transferencia de datos
+│   ├── mappers/         # Convertidores entre entidades y DTOs
+│   └── validators/      # Validadores
+├── interfaces/          # Adaptadores de interfaz
+│   ├── controllers/     # Controladores REST
+│   └── routes/          # Definición de rutas
+└── shared/              # Utilidades compartidas
+    ├── guards/          # Guards de autenticación
+    ├── interceptors/    # Interceptores
+    └── utils/           # Utilidades generales
+```
+
+## 🚀 Instalación
+
+<details>
+<summary>Prerrequisitos</summary>
+
+- Node.js (v16.x o superior)
+- PostgreSQL (v14.x o superior)
+- npm (v8.x o superior) o yarn (v1.22.x o superior)
+
+</details>
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/dfajardoCNE/university-api.git
+   cd university-api
+   ```
+
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
+
+3. **Configurar variables de entorno:**
+   ```bash
+   cp .env.example .env
+   # Editar .env con tus configuraciones
+   ```
+
+4. **Generar el cliente de Prisma:**
+   ```bash
+   npx prisma generate
+   ```
+
+5. **Ejecutar migraciones de base de datos:**
+   ```bash
+   npx prisma migrate dev
+   ```
+
+## ▶️ Ejecución
+
+```bash
+# Desarrollo
+npm run start:dev
+
+# Producción
+npm run build
+npm run start:prod
+```
+
+> 💡 **Tip**: Usa `npm run start:debug` para ejecutar con soporte de depuración.
+
+## 📚 Documentación API
+
+La documentación interactiva de la API está disponible en Swagger:
+
+```
+http://localhost:3000/api/docs
+```
+
+<div align="center">
+
+![Swagger UI](shared/utils/university-api.png)
+
+</div>
+
+## 🔐 Roles y Permisos
+
+| Rol | Descripción | Permisos |
+|-----|-------------|----------|
+| **👑 Admin** | Administrador del sistema | Acceso completo a todas las funcionalidades |
+| **👨‍🏫 Profesor** | Personal docente | Gestión de cursos, calificaciones y materiales |
+| **👨‍🎓 Estudiante** | Alumnos registrados | Consulta de cursos, inscripciones y calificaciones |
+
+## 📄 Licencia
+
+[![Licencia MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit)
+
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+<div align="center">
+
+### ¿Encontraste un error o tienes una sugerencia?
+
+[![Reportar Issue](https://img.shields.io/badge/Reportar_Issue-GitHub-green.svg)](https://github.com/dfajardoCNE/university-api/issues/new)
+
+</div>
