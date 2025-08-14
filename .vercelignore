@@ -1,0 +1,84 @@
+# Dependencies
+node_modules
+
+# Development files
+src
+test
+
+# Build files
+*.tsbuildinfo
+
+# Environment files
+.env.local
+.env.development
+.env.test
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+README*
+
+# Database files (for SQLite)
+*.db
+*.sqlite
+*.sqlite3
+
+# Prisma
+prisma/migrations
+
+# Scripts (except build scripts)
+scripts/setup-database.js
+scripts/setup-database-auto.js
+
+# Schema templates
+infrastructure/database/prisma/schemas/
+
+# TypeScript config
+tsconfig.json
+tsconfig.build.json
+
+# ESLint and Prettier
+.eslintrc.js
+.prettierrc
+
+# Jest
+jest.config.js
+test/
+
+# Nest CLI
+nest-cli.json

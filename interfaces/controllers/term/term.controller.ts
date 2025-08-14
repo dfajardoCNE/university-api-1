@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { CreateTermUseCase } from '../../../domain/use-cases/term/create-term.us
 import { UpdateTermUseCase } from '../../../domain/use-cases/term/update-term.use-case';
 import { DeleteTermUseCase } from '../../../domain/use-cases/term/delete-term.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('periodos')
 @Controller('terms')
 export class TermController {
@@ -26,10 +30,17 @@ export class TermController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener todos los períodos académicos' })
   @ApiResponse({ status: 200, description: 'Lista de períodos académicos', type: [TermResponseDto] })
-  async findAll(): Promise<TermResponseDto[]> {
-    return this.getAllTermsUseCase.execute();
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<TermResponseDto[]> {
+    const terms = await this.getAllTermsUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(terms, pageNum, limitNum);
   }
 
   @Get('current')

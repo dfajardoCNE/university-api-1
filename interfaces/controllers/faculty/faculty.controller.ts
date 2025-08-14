@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { CreateFacultyUseCase } from '../../../domain/use-cases/faculty/create-f
 import { UpdateFacultyUseCase } from '../../../domain/use-cases/faculty/update-faculty.use-case';
 import { DeleteFacultyUseCase } from '../../../domain/use-cases/faculty/delete-faculty.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('facultades')
 @Controller('faculties')
 export class FacultyController {
@@ -26,13 +30,23 @@ export class FacultyController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener todas las facultades' })
   @ApiResponse({ status: 200, description: 'Lista de facultades', type: [FacultyResponseDto] })
-  async findAll(@Query('universityId') universityId?: string): Promise<FacultyResponseDto[]> {
+  async findAll(
+    @Query('universityId') universityId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<FacultyResponseDto[]> {
+    let faculties;
     if (universityId) {
-      return this.getFacultiesByUniversityUseCase.execute(+universityId);
+      faculties = await this.getFacultiesByUniversityUseCase.execute(+universityId);
+    } else {
+      faculties = await this.getAllFacultiesUseCase.execute();
     }
-    return this.getAllFacultiesUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(faculties, pageNum, limitNum);
   }
 
   @Get(':id')

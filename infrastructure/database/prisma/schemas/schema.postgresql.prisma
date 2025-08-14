@@ -1,0 +1,340 @@
+// This is your Prisma schema file for PostgreSQL
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_POSTGRESQL")
+}
+
+// 1. UNIVERSIDAD, FACULTADES Y DEPARTAMENTOS
+model University {
+  id          Int       @id @default(autoincrement())
+  name        String
+  country     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
+
+  // Relaciones
+  faculties   Faculty[]
+  campuses    Campus[]
+
+  @@map("university")
+}
+
+model Faculty {
+  id           Int       @id @default(autoincrement())
+  universityId Int
+  name         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  deletedAt    DateTime?
+
+  // Relaciones
+  university   University @relation(fields: [universityId], references: [id])
+  departments  Department[]
+
+  @@map("faculty")
+  @@index([universityId])
+}
+
+model Department {
+  id          Int       @id @default(autoincrement())
+  facultyId   Int
+  name        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
+
+  // Relaciones
+  faculty     Faculty @relation(fields: [facultyId], references: [id])
+  careers     Career[]
+  courses     Course[]
+
+  @@map("department")
+  @@index([facultyId])
+}
+
+// 2. CAMPUS Y AULAS
+model Campus {
+  id           Int       @id @default(autoincrement())
+  universityId Int
+  name         String
+  address      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  deletedAt    DateTime?
+
+  // Relaciones
+  university     University     @relation(fields: [universityId], references: [id])
+  classrooms     Classroom[]
+  careerCampuses CareerCampus[]
+
+  @@map("campus")
+  @@index([universityId])
+}
+
+model Classroom {
+  id        Int       @id @default(autoincrement())
+  campusId  Int
+  name      String
+  capacity  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  // Relaciones
+  campus   Campus    @relation(fields: [campusId], references: [id])
+  sections Section[]
+
+  @@map("classroom")
+  @@index([campusId])
+}
+
+// 3. PERIODOS ACADÉMICOS
+model Term {
+  id        Int       @id @default(autoincrement())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  // Relaciones
+  sections Section[]
+
+  @@map("term")
+}
+
+// 4. HORARIOS
+model SessionTime {
+  id        Int       @id @default(autoincrement())
+  dayOfWeek Int // 1=Lunes, 2=Martes, ..., 7=Domingo
+  startTime String // Formato HH:MM
+  endTime   String // Formato HH:MM
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  // Relaciones
+  sections Section[]
+
+  @@map("session_time")
+}
+
+// 5. CARRERAS Y CURSOS
+model Career {
+  id           Int       @id @default(autoincrement())
+  departmentId Int
+  name         String
+  duration     Int? // Duración en semestres
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  deletedAt    DateTime?
+
+  // Relaciones
+  department     Department     @relation(fields: [departmentId], references: [id])
+  careerCampuses CareerCampus[]
+  students       Student[]
+
+  @@map("career")
+  @@index([departmentId])
+}
+
+model CareerCampus {
+  id       Int @id @default(autoincrement())
+  careerId Int
+  campusId Int
+
+  // Relaciones
+  career Career @relation(fields: [careerId], references: [id])
+  campus Campus @relation(fields: [campusId], references: [id])
+
+  @@unique([careerId, campusId])
+  @@map("career_campus")
+  @@index([careerId])
+  @@index([campusId])
+}
+
+model Course {
+  id           Int       @id @default(autoincrement())
+  departmentId Int
+  code         String    @unique
+  name         String
+  credits      Int?
+  description  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  deletedAt    DateTime?
+
+  // Relaciones
+  department         Department           @relation(fields: [departmentId], references: [id])
+  sections           Section[]
+  prerequisites      CoursePrerequisite[] @relation("CoursePrerequisites")
+  prerequisiteFor    CoursePrerequisite[] @relation("PrerequisiteFor")
+
+  @@map("course")
+  @@index([departmentId])
+}
+
+model CoursePrerequisite {
+  id             Int @id @default(autoincrement())
+  courseId       Int
+  prerequisiteId Int
+
+  // Relaciones
+  course       Course @relation("CoursePrerequisites", fields: [courseId], references: [id])
+  prerequisite Course @relation("PrerequisiteFor", fields: [prerequisiteId], references: [id])
+
+  @@unique([courseId, prerequisiteId])
+  @@map("course_prerequisite")
+  @@index([courseId])
+  @@index([prerequisiteId])
+}
+
+// 6. ROLES Y USUARIOS
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
+
+  // Relaciones
+  users User[]
+
+  @@map("role")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  roleId    Int
+  username  String    @unique
+  email     String    @unique
+  password  String
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  // Relaciones
+  role      Role       @relation(fields: [roleId], references: [id])
+  person    Person?
+  professor Professor?
+  student   Student?
+
+  @@map("user")
+  @@index([roleId])
+}
+
+model Person {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  phone       String?
+  address     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
+
+  // Relaciones
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("person")
+}
+
+// 7. PROFESORES Y ESTUDIANTES
+model Professor {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @unique
+  employeeCode String?   @unique
+  hireDate     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  deletedAt    DateTime?
+
+  // Relaciones
+  user     User      @relation(fields: [userId], references: [id])
+  sections Section[]
+
+  @@map("professor")
+}
+
+model Student {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @unique
+  careerId     Int
+  studentCode  String?   @unique
+  enrolledDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  deletedAt    DateTime?
+
+  // Relaciones
+  user        User         @relation(fields: [userId], references: [id])
+  career      Career       @relation(fields: [careerId], references: [id])
+  enrollments Enrollment[]
+
+  @@map("student")
+  @@index([careerId])
+}
+
+// 8. SECCIONES Y MATRÍCULAS
+model Section {
+  id            Int       @id @default(autoincrement())
+  courseId      Int
+  professorId   Int
+  termId        Int
+  classroomId   Int?
+  sessionTimeId Int?
+  sectionCode   String
+  capacity      Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+  deletedAt     DateTime?
+
+  // Relaciones
+  course      Course       @relation(fields: [courseId], references: [id])
+  professor   Professor    @relation(fields: [professorId], references: [id])
+  term        Term         @relation(fields: [termId], references: [id])
+  classroom   Classroom?   @relation(fields: [classroomId], references: [id])
+  sessionTime SessionTime? @relation(fields: [sessionTimeId], references: [id])
+  enrollments Enrollment[]
+
+  @@unique([courseId, termId, sectionCode])
+  @@map("section")
+  @@index([courseId])
+  @@index([professorId])
+  @@index([termId])
+  @@index([classroomId])
+  @@index([sessionTimeId])
+}
+
+model Enrollment {
+  id        Int       @id @default(autoincrement())
+  studentId Int
+  sectionId Int
+  grade     Float?
+  status    String    @default("enrolled") // enrolled, dropped, completed
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  // Relaciones
+  student Student @relation(fields: [studentId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
+
+  @@unique([studentId, sectionId])
+  @@map("enrollment")
+  @@index([studentId])
+  @@index([sectionId])
+}

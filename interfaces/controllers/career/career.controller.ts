@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { CreateCareerUseCase } from '../../../domain/use-cases/career/create-car
 import { UpdateCareerUseCase } from '../../../domain/use-cases/career/update-career.use-case';
 import { DeleteCareerUseCase } from '../../../domain/use-cases/career/delete-career.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('carreras')
 @Controller('careers')
 export class CareerController {
@@ -26,13 +30,23 @@ export class CareerController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener todas las carreras' })
   @ApiResponse({ status: 200, description: 'Lista de carreras', type: [CareerResponseDto] })
-  async findAll(@Query('departmentId') departmentId?: string): Promise<CareerResponseDto[]> {
+  async findAll(
+    @Query('departmentId') departmentId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<CareerResponseDto[]> {
+    let careers;
     if (departmentId) {
-      return this.getCareersByDepartmentUseCase.execute(+departmentId);
+      careers = await this.getCareersByDepartmentUseCase.execute(+departmentId);
+    } else {
+      careers = await this.getAllCareersUseCase.execute();
     }
-    return this.getAllCareersUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(careers, pageNum, limitNum);
   }
 
   @Get(':id')

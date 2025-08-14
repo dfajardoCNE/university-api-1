@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { GetApplicationsByStatusUseCase } from '../../../domain/use-cases/applic
 import { CreateApplicationUseCase } from '../../../domain/use-cases/application/create-application.use-case';
 import { UpdateApplicationUseCase } from '../../../domain/use-cases/application/update-application.use-case';
 import { DeleteApplicationUseCase } from '../../../domain/use-cases/application/delete-application.use-case';
+
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
 
 @ApiTags('solicitudes')
 @Controller('applications')
@@ -33,13 +37,21 @@ export class ApplicationController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener todas las solicitudes' })
   @ApiResponse({ status: 200, description: 'Lista de solicitudes', type: [ApplicationResponseDto] })
+  @UseInterceptors(CacheInterceptor)
   async findAll(
     @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ): Promise<ApplicationResponseDto[]> {
+    let applications;
     if (status) {
-      return this.getApplicationsByStatusUseCase.execute(status);
+      applications = await this.getApplicationsByStatusUseCase.execute(status);
+    } else {
+      applications = await this.getAllApplicationsUseCase.execute();
     }
-    return this.getAllApplicationsUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(applications, pageNum, limitNum);
   }
 
   @Get('person/:personId')
@@ -47,8 +59,16 @@ export class ApplicationController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener solicitudes por persona' })
   @ApiResponse({ status: 200, description: 'Lista de solicitudes', type: [ApplicationResponseDto] })
-  async findByPerson(@Param('personId') personId: string): Promise<ApplicationResponseDto[]> {
-    return this.getApplicationsByPersonUseCase.execute(+personId);
+  @UseInterceptors(CacheInterceptor)
+  async findByPerson(
+    @Param('personId') personId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<ApplicationResponseDto[]> {
+    const applications = await this.getApplicationsByPersonUseCase.execute(+personId);
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(applications, pageNum, limitNum);
   }
 
   @Get(':id')

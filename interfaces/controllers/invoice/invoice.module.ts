@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { InvoiceController } from './invoice.controller';
 import { CreateInvoiceUseCase } from '../../../domain/use-cases/invoice/create-invoice.use-case';
 import { VerifyPaymentStatusUseCase } from '../../../domain/use-cases/invoice/verify-payment-status.use-case';
+import { GetInvoiceByIdUseCase } from '../../../domain/use-cases/invoice/get-invoice-by-id.use-case';
+import { GetInvoicesByStudentUseCase } from '../../../domain/use-cases/invoice/get-invoices-by-student.use-case';
 import { InvoiceRepositoryImpl } from '../../../infrastructure/database/repositories/invoice/invoice.repository.impl';
 import { StudentRepositoryImpl } from '../../../infrastructure/database/repositories/student/student.repository.impl';
 import { NotificationService } from '../../../infrastructure/services/notification.service';
@@ -22,6 +24,8 @@ import { ServicesModule } from '../../../infrastructure/services/services.module
     },
     CreateInvoiceUseCase,
     VerifyPaymentStatusUseCase,
+    GetInvoiceByIdUseCase,
+    GetInvoicesByStudentUseCase,
   ],
 })
 export class InvoiceModule {}

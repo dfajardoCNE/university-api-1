@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -12,6 +12,10 @@ import { CreateUniversityUseCase } from '../../../domain/use-cases/university/cr
 import { UpdateUniversityUseCase } from '../../../domain/use-cases/university/update-university.use-case';
 import { DeleteUniversityUseCase } from '../../../domain/use-cases/university/delete-university.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('universidad')
 @Controller('universities')
 export class UniversityController {
@@ -24,10 +28,17 @@ export class UniversityController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener todas las universidades' })
   @ApiResponse({ status: 200, description: 'Lista de universidades', type: [UniversityResponseDto] })
-  async findAll(): Promise<UniversityResponseDto[]> {
-    return this.getAllUniversitiesUseCase.execute();
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<UniversityResponseDto[]> {
+    const universities = await this.getAllUniversitiesUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(universities, pageNum, limitNum);
   }
 
   @Get(':id')

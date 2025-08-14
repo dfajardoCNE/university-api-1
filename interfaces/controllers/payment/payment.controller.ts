@@ -1,8 +1,15 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CreatePaymentUseCase } from '../../../domain/use-cases/payment/create-payment.use-case';
+import { GetPaymentByIdUseCase } from '../../../domain/use-cases/payment/get-payment-by-id.use-case';
+import { GetPaymentsByStudentUseCase } from '../../../domain/use-cases/payment/get-payments-by-student.use-case';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
 import { Roles } from '../../../shared/decorators/roles.decorator';
+import { PaymentMapper } from '../../../application/mappers/payment.mapper';
+import { PaymentResponseDto } from '../../../application/dto/payment/payment-response.dto';
+import { paginate } from '../../../shared/utils/pagination';
 
 class CreatePaymentDto {
   studentId: number;
@@ -14,30 +21,61 @@ class CreatePaymentDto {
   description?: string;
 }
 
+@ApiTags('pagos')
 @Controller('payments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PaymentController {
   constructor(
     private readonly createPaymentUseCase: CreatePaymentUseCase,
+    private readonly getPaymentByIdUseCase: GetPaymentByIdUseCase,
+    private readonly getPaymentsByStudentUseCase: GetPaymentsByStudentUseCase,
   ) {}
 
+  /**
+   * Register a new payment.
+   */
   @Post()
   @Roles('admin', 'finance')
-  async create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.createPaymentUseCase.execute(createPaymentDto);
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Crear un nuevo pago' })
+  @ApiResponse({ status: 201, description: 'Pago creado', type: PaymentResponseDto })
+  async create(@Body() createPaymentDto: CreatePaymentDto): Promise<PaymentResponseDto> {
+    const payment = await this.createPaymentUseCase.execute(createPaymentDto);
+    return PaymentMapper.toResponseDto(payment);
   }
 
+  /**
+   * Get all payments for a given student.
+   */
   @Get('student/:id')
   @Roles('admin', 'finance', 'student')
-  async getByStudent(@Param('id') id: string) {
-    // Aquí se implementaría el caso de uso para obtener pagos por estudiante
-    return { message: 'Not implemented yet' };
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener pagos por estudiante' })
+  @ApiResponse({ status: 200, description: 'Lista de pagos', type: [PaymentResponseDto] })
+  @UseInterceptors(CacheInterceptor)
+  async getByStudent(
+    @Param('id') id: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<PaymentResponseDto[]> {
+    const payments = await this.getPaymentsByStudentUseCase.execute(+id);
+    const dtos = PaymentMapper.toResponseDtoArray(payments);
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(dtos, pageNum, limitNum);
   }
 
+  /**
+   * Get a payment by its identifier.
+   */
   @Get(':id')
   @Roles('admin', 'finance')
-  async getById(@Param('id') id: string) {
-    // Aquí se implementaría el caso de uso para obtener un pago por ID
-    return { message: 'Not implemented yet' };
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener un pago por ID' })
+  @ApiResponse({ status: 200, description: 'Pago encontrado', type: PaymentResponseDto })
+  @ApiResponse({ status: 404, description: 'Pago no encontrado' })
+  async getById(@Param('id') id: string): Promise<PaymentResponseDto> {
+    const payment = await this.getPaymentByIdUseCase.execute(+id);
+    return PaymentMapper.toResponseDto(payment);
   }
 }

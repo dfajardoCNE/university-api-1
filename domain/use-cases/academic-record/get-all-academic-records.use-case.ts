@@ -1,0 +1,11 @@
+import { Injectable, Inject } from '@nestjs/common';
+import { AcademicRecord } from '../../entities/academic-record.entity';
+import { AcademicRecordRepository } from '../../repositories/academic-record.repository';
+
+@Injectable()
+export class GetAllAcademicRecordsUseCase {
+  constructor(@Inject('AcademicRecordRepository') private readonly recordRepository: AcademicRecordRepository) {}
+  async execute(): Promise<AcademicRecord[]> {
+    return this.recordRepository.findAll();
+  }
+}

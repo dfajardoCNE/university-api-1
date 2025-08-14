@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { CreateSessionTimeUseCase } from '../../../domain/use-cases/session-time
 import { UpdateSessionTimeUseCase } from '../../../domain/use-cases/session-time/update-session-time.use-case';
 import { DeleteSessionTimeUseCase } from '../../../domain/use-cases/session-time/delete-session-time.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('horarios')
 @Controller('session-times')
 export class SessionTimeController {
@@ -26,13 +30,23 @@ export class SessionTimeController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener todos los horarios de sesión' })
   @ApiResponse({ status: 200, description: 'Lista de horarios de sesión', type: [SessionTimeResponseDto] })
-  async findAll(@Query('dayOfWeek') dayOfWeek?: string): Promise<SessionTimeResponseDto[]> {
+  async findAll(
+    @Query('dayOfWeek') dayOfWeek?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<SessionTimeResponseDto[]> {
+    let sessionTimes;
     if (dayOfWeek) {
-      return this.getSessionTimesByDayUseCase.execute(+dayOfWeek);
+      sessionTimes = await this.getSessionTimesByDayUseCase.execute(+dayOfWeek);
+    } else {
+      sessionTimes = await this.getAllSessionTimesUseCase.execute();
     }
-    return this.getAllSessionTimesUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(sessionTimes, pageNum, limitNum);
   }
 
   @Get(':id')

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './infrastructure/database/prisma/prisma.module';
 import { AuthModule as InfraAuthModule } from './infrastructure/auth/auth.module';
@@ -38,9 +39,21 @@ import { DashboardModule } from './interfaces/controllers/dashboard/dashboard.mo
 import { PaymentModule } from './interfaces/controllers/payment/payment.module';
 import { InvoiceModule } from './interfaces/controllers/invoice/invoice.module';
 import { AcademicModule } from './interfaces/controllers/student/academic.module';
+import { AdministrativeStaffModule } from './interfaces/controllers/administrative-staff/administrative-staff.module';
+import { AcademicRecordModule } from './interfaces/controllers/academic-record/academic-record.module';
+import { AcademicCalendarModule } from './interfaces/controllers/academic-calendar/academic-calendar.module';
+import { EnrollmentModule } from './interfaces/controllers/enrollment/enrollment.module';
+import { StudyPlanModule } from './interfaces/controllers/study-plan/study-plan.module';
+import { AnalyticsModule } from './interfaces/controllers/analytics/analytics.module';
 
 @Module({
   imports: [
+    // Registro del módulo de caché para habilitar caching de endpoints
+    CacheModule.register({
+      ttl: 60, // tiempo de vida en segundos
+      max: 100, // número máximo de elementos en caché
+      isGlobal: true,
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -83,6 +96,12 @@ import { AcademicModule } from './interfaces/controllers/student/academic.module
     PaymentModule,
     InvoiceModule,
     AcademicModule,
+    AdministrativeStaffModule,
+    AcademicRecordModule,
+    AcademicCalendarModule,
+    EnrollmentModule,
+    StudyPlanModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}

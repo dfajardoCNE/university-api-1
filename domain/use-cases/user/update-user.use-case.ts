@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { User } from '../../entities/user.entity';
 import { UserRepository } from '../../repositories/user.repository';
 import { PersonRepository } from '../../repositories/person.repository';
