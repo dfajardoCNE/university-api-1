@@ -1,19 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
+import { SanitizePipe } from './shared/pipes/sanitize.pipe';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Configuración global de pipes
+  // Configuración global de validación y sanitización
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
+  // Sanitize all incoming payloads to mitigate XSS/injection attacks
+  app.useGlobalPipes(new SanitizePipe());
 
   // Configuración de prefijo global para la API
   app.setGlobalPrefix('api');
@@ -61,8 +66,15 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
+  // Configuración de cabeceras de seguridad
+  app.use(helmet());
+
   // Configuración de CORS
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
   await app.listen(process.env.PORT || 3000);
   console.log(`Aplicación corriendo en: ${await app.getUrl()}`);

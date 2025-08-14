@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -14,6 +14,10 @@ import { CreateStudentUseCase } from '../../../domain/use-cases/student/create-s
 import { UpdateStudentUseCase } from '../../../domain/use-cases/student/update-student.use-case';
 import { DeleteStudentUseCase } from '../../../domain/use-cases/student/delete-student.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('estudiantes')
 @Controller('students')
 export class StudentController {
@@ -27,19 +31,27 @@ export class StudentController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'profesor')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener todos los estudiantes' })
   @ApiResponse({ status: 200, description: 'Lista de estudiantes', type: [StudentResponseDto] })
-  async findAll(@Query('careerId') careerId?: string): Promise<StudentResponseDto[]> {
+  async findAll(
+    @Query('careerId') careerId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<StudentResponseDto[]> {
     let students;
     if (careerId) {
       students = await this.getStudentsByCareerUseCase.execute(+careerId);
     } else {
       students = await this.getAllStudentsUseCase.execute();
     }
-    return StudentMapper.toResponseDtoArray(students);
+    const dtos = StudentMapper.toResponseDtoArray(students);
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(dtos, pageNum, limitNum);
   }
 
   @Get(':id')

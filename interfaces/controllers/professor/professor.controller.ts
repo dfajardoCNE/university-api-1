@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { CreateProfessorUseCase } from '../../../domain/use-cases/professor/crea
 import { UpdateProfessorUseCase } from '../../../domain/use-cases/professor/update-professor.use-case';
 import { DeleteProfessorUseCase } from '../../../domain/use-cases/professor/delete-professor.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('profesores')
 @Controller('professors')
 export class ProfessorController {
@@ -25,14 +29,21 @@ export class ProfessorController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener todos los profesores' })
   @ApiResponse({ status: 200, description: 'Lista de profesores', type: [ProfessorResponseDto] })
-  async findAll(): Promise<ProfessorResponseDto[]> {
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<ProfessorResponseDto[]> {
     const professors = await this.getAllProfessorsUseCase.execute();
-    return ProfessorMapper.toResponseDtoArray(professors);
+    const dtos = ProfessorMapper.toResponseDtoArray(professors);
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(dtos, pageNum, limitNum);
   }
 
   @Get(':id')

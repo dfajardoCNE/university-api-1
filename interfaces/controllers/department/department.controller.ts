@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { CreateDepartmentUseCase } from '../../../domain/use-cases/department/cr
 import { UpdateDepartmentUseCase } from '../../../domain/use-cases/department/update-department.use-case';
 import { DeleteDepartmentUseCase } from '../../../domain/use-cases/department/delete-department.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('departamentos')
 @Controller('departments')
 export class DepartmentController {
@@ -26,13 +30,23 @@ export class DepartmentController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener todos los departamentos' })
   @ApiResponse({ status: 200, description: 'Lista de departamentos', type: [DepartmentResponseDto] })
-  async findAll(@Query('facultyId') facultyId?: string): Promise<DepartmentResponseDto[]> {
+  async findAll(
+    @Query('facultyId') facultyId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<DepartmentResponseDto[]> {
+    let departments;
     if (facultyId) {
-      return this.getDepartmentsByFacultyUseCase.execute(+facultyId);
+      departments = await this.getDepartmentsByFacultyUseCase.execute(+facultyId);
+    } else {
+      departments = await this.getAllDepartmentsUseCase.execute();
     }
-    return this.getAllDepartmentsUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(departments, pageNum, limitNum);
   }
 
   @Get(':id')

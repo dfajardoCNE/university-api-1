@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -13,6 +13,10 @@ import { CreateCourseUseCase } from '../../../domain/use-cases/course/create-cou
 import { UpdateCourseUseCase } from '../../../domain/use-cases/course/update-course.use-case';
 import { DeleteCourseUseCase } from '../../../domain/use-cases/course/delete-course.use-case';
 
+// Import cache interceptor and pagination helper
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { paginate } from '../../../shared/utils/pagination';
+
 @ApiTags('cursos')
 @Controller('courses')
 export class CourseController {
@@ -26,13 +30,23 @@ export class CourseController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiOperation({ summary: 'Obtener todos los cursos' })
   @ApiResponse({ status: 200, description: 'Lista de cursos', type: [CourseResponseDto] })
-  async findAll(@Query('careerId') careerId?: string): Promise<CourseResponseDto[]> {
+  async findAll(
+    @Query('careerId') careerId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<CourseResponseDto[]> {
+    let courses;
     if (careerId) {
-      return this.getCoursesByCareerUseCase.execute(+careerId);
+      courses = await this.getCoursesByCareerUseCase.execute(+careerId);
+    } else {
+      courses = await this.getAllCoursesUseCase.execute();
     }
-    return this.getAllCoursesUseCase.execute();
+    const pageNum = page ? parseInt(page) : undefined;
+    const limitNum = limit ? parseInt(limit) : undefined;
+    return paginate(courses, pageNum, limitNum);
   }
 
   @Get(':id')

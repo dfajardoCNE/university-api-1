@@ -10,6 +10,12 @@ import { ProfessorRepositoryImpl } from './professor/professor.repository.impl';
 import { SectionRepositoryImpl } from './section/section.repository.impl';
 import { ExamRepositoryImpl } from './exam/exam.repository.impl';
 import { PaymentRepositoryImpl } from './payment/payment.repository.impl';
+import { AdministrativeStaffRepositoryImpl } from './administrative-staff/administrative-staff.repository.impl';
+import { AcademicRecordRepositoryImpl } from './academic-record/academic-record.repository.impl';
+import { AcademicCalendarRepositoryImpl } from './academic-calendar/academic-calendar.repository.impl';
+import { EnrollmentRepositoryImpl } from './enrollment/enrollment.repository.impl';
+import { StudyPlanRepositoryImpl } from './study-plan/study-plan.repository.impl';
+import { AnalyticsRepositoryImpl } from './analytics/analytics.repository.impl';
 
 @Module({
   imports: [PrismaModule],
@@ -54,6 +60,30 @@ import { PaymentRepositoryImpl } from './payment/payment.repository.impl';
       provide: 'PaymentRepository',
       useClass: PaymentRepositoryImpl,
     },
+    {
+      provide: 'AdministrativeStaffRepository',
+      useClass: AdministrativeStaffRepositoryImpl,
+    },
+    {
+      provide: 'AcademicRecordRepository',
+      useClass: AcademicRecordRepositoryImpl,
+    },
+    {
+      provide: 'AcademicCalendarRepository',
+      useClass: AcademicCalendarRepositoryImpl,
+    },
+    {
+      provide: 'EnrollmentRepository',
+      useClass: EnrollmentRepositoryImpl,
+    },
+    {
+      provide: 'StudyPlanRepository',
+      useClass: StudyPlanRepositoryImpl,
+    },
+    {
+      provide: 'AnalyticsRepository',
+      useClass: AnalyticsRepositoryImpl,
+    },
   ],
   exports: [
     'UserRepository',
@@ -66,6 +96,12 @@ import { PaymentRepositoryImpl } from './payment/payment.repository.impl';
     'SectionRepository',
     'ExamRepository',
     'PaymentRepository',
+    'AdministrativeStaffRepository',
+    'AcademicRecordRepository',
+    'AcademicCalendarRepository',
+    'EnrollmentRepository',
+    'StudyPlanRepository',
+    'AnalyticsRepository',
   ],
 })
 export class RepositoriesModule {}
