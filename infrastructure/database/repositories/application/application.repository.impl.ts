@@ -12,7 +12,7 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       include: {
         person: true,
         career: true,
-        documents: true,
+        applicationDocuments: true,
       },
     });
   }
@@ -23,7 +23,7 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       include: {
         person: true,
         career: true,
-        documents: true,
+        applicationDocuments: true,
       },
     });
   }
@@ -33,7 +33,7 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       where: { personId },
       include: {
         career: true,
-        documents: true,
+        applicationDocuments: true,
       },
     });
   }
@@ -43,7 +43,7 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       where: { careerId },
       include: {
         person: true,
-        documents: true,
+        applicationDocuments: true,
       },
     });
   }
@@ -54,7 +54,7 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       include: {
         person: true,
         career: true,
-        documents: true,
+        applicationDocuments: true,
       },
     });
   }
@@ -65,7 +65,7 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       include: {
         person: true,
         career: true,
-        documents: true,
+        applicationDocuments: true,
       },
     });
   }
@@ -89,7 +89,7 @@ export class ApplicationRepositoryImpl implements ApplicationRepository {
       include: {
         person: true,
         career: true,
-        documents: true,
+        applicationDocuments: true,
       },
     });
   }

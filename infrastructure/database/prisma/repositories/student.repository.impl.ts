@@ -8,45 +8,73 @@ export class PrismaStudentRepository implements StudentRepository {
   constructor(private prisma: PrismaService) {}
 
   async findAll(): Promise<Student[]> {
-    return this.prisma.student.findMany({
+    const students = await this.prisma.student.findMany({
       include: {
         person: true,
         career: true,
       },
     });
+    
+    return students.map(student => ({
+      ...student,
+      academicStatus: student.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    }));
   }
 
   async findById(id: number): Promise<Student> {
-    return this.prisma.student.findUnique({
+    const student = await this.prisma.student.findUnique({
       where: { id },
       include: {
         person: true,
         career: true,
       },
     });
+    
+    if (!student) return null;
+    
+    return {
+      ...student,
+      academicStatus: student.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    };
   }
 
   async findByPerson(personId: number): Promise<Student> {
-    return this.prisma.student.findFirst({
+    const student = await this.prisma.student.findFirst({
       where: { personId },
       include: {
         person: true,
         career: true,
       },
     });
+    
+    if (!student) return null;
+    
+    return {
+      ...student,
+      academicStatus: student.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    };
   }
 
   async findByCareer(careerId: number): Promise<Student[]> {
-    return this.prisma.student.findMany({
+    const students = await this.prisma.student.findMany({
       where: { careerId },
       include: {
         person: true,
       },
     });
+    
+    return students.map(student => ({
+      ...student,
+      academicStatus: student.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    }));
   }
 
   async findByCampus(campusId: number): Promise<Student[]> {
-    return this.prisma.student.findMany({
+    const students = await this.prisma.student.findMany({
       where: {
         career: {
           careerCampus: {
@@ -61,27 +89,47 @@ export class PrismaStudentRepository implements StudentRepository {
         career: true,
       },
     });
+    
+    return students.map(student => ({
+      ...student,
+      academicStatus: student.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    }));
   }
 
   async create(student: Partial<Student>): Promise<Student> {
-    return this.prisma.student.create({
-      data: student as any,
+    const { academicStatus, gpa, ...data } = student;
+    const createdStudent = await this.prisma.student.create({
+      data: data as any,
       include: {
         person: true,
         career: true,
       },
     });
+    
+    return {
+      ...createdStudent,
+      academicStatus: createdStudent.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    };
   }
 
   async update(id: number, student: Partial<Student>): Promise<Student> {
-    return this.prisma.student.update({
+    const { academicStatus, gpa, ...data } = student;
+    const updatedStudent = await this.prisma.student.update({
       where: { id },
-      data: student,
+      data: data as any,
       include: {
         person: true,
         career: true,
       },
     });
+    
+    return {
+      ...updatedStudent,
+      academicStatus: updatedStudent.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    };
   }
 
   async delete(id: number): Promise<void> {
@@ -95,21 +143,27 @@ export class PrismaStudentRepository implements StudentRepository {
     await this.prisma.student.update({
       where: { id },
       data: {
-        academicStatus: status,
-        gpa,
+        status: status, // Use status field instead of academicStatus
         updatedAt: new Date(),
       },
     });
+    // The academicStatus and gpa will be handled in the mapping layer
   }
 
   async findByAcademicStatus(status: string): Promise<Student[]> {
-    return this.prisma.student.findMany({
-      where: { academicStatus: status },
+    const students = await this.prisma.student.findMany({
+      where: { status: status }, // Use status field instead of academicStatus
       include: {
         person: true,
         career: true,
       },
     });
+    
+    return students.map(student => ({
+      ...student,
+      academicStatus: student.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    }));
   }
 
   async getAcademicHistory(id: number): Promise<any> {

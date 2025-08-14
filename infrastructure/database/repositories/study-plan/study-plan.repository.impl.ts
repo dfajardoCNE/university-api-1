@@ -14,73 +14,108 @@ export class StudyPlanRepositoryImpl implements StudyPlanRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<StudyPlan[]> {
-    return this.prisma.studyPlan.findMany({
+    const studyPlans = await this.prisma.studyPlan.findMany({
       include: {
-        planCourses: true,
+        courses: true,
       },
-    }) as unknown as StudyPlan[];
+    });
+    
+    // Map the Prisma model to the domain entity
+    return studyPlans.map(plan => ({
+      ...plan,
+      planCourses: plan.courses,
+    })) as unknown as StudyPlan[];
   }
 
   async findById(id: number): Promise<StudyPlan | null> {
-    return (await this.prisma.studyPlan.findUnique({
+    const studyPlan = await this.prisma.studyPlan.findUnique({
       where: { id },
       include: {
-        planCourses: true,
+        courses: true,
+        career: true,
       },
-    })) as unknown as StudyPlan;
+    });
+    
+    if (!studyPlan) return null;
+    
+    // Map the Prisma model to the domain entity
+    return {
+      ...studyPlan,
+      planCourses: studyPlan.courses,
+    } as unknown as StudyPlan;
   }
 
   async findByCareer(careerId: number): Promise<StudyPlan[]> {
-    return (await this.prisma.studyPlan.findMany({
+    const studyPlans = await this.prisma.studyPlan.findMany({
       where: { careerId },
       include: {
-        planCourses: true,
+        courses: true,
       },
+    });
+    
+    // Map the Prisma model to the domain entity
+    return studyPlans.map(plan => ({
+      ...plan,
+      planCourses: plan.courses,
     })) as unknown as StudyPlan[];
   }
 
   async create(data: Partial<StudyPlan>): Promise<StudyPlan> {
     const { planCourses, ...studyPlanData } = data;
     // Create StudyPlan along with related courses if provided
-    return (await this.prisma.studyPlan.create({
+    const createdPlan = await this.prisma.studyPlan.create({
       data: {
         ...(studyPlanData as any),
-        planCourses: planCourses
+        courses: planCourses
           ? {
               create: planCourses.map((pc: any) => ({
                 courseId: pc.courseId,
-                termNumber: pc.termNumber,
+                semester: pc.termNumber, // Map termNumber to semester field
               })),
             }
           : undefined,
       },
       include: {
-        planCourses: true,
+        courses: true,
+        career: true,
       },
-    })) as unknown as StudyPlan;
+    });
+    
+    // Map the Prisma model to the domain entity
+    return {
+      ...createdPlan,
+      planCourses: createdPlan.courses,
+    } as unknown as StudyPlan;
   }
 
   async update(id: number, data: Partial<StudyPlan>): Promise<StudyPlan> {
     const { planCourses, ...studyPlanData } = data;
     // Update StudyPlan; if planCourses provided, replace all existing
-    return (await this.prisma.studyPlan.update({
+    const updatedPlan = await this.prisma.studyPlan.update({
       where: { id },
       data: {
         ...(studyPlanData as any),
-        planCourses: planCourses
+        courses: planCourses
           ? {
               deleteMany: {},
               create: planCourses.map((pc: any) => ({
                 courseId: pc.courseId,
-                termNumber: pc.termNumber,
+                semester: pc.termNumber, // Map termNumber to semester field
               })),
             }
           : undefined,
       },
       include: {
-        planCourses: true,
+        courses: true,
+        career: true,
       },
-    })) as unknown as StudyPlan;
+    });
+    
+    // Map the Prisma model to the domain entity
+    return {
+      ...updatedPlan,
+      planCourses: updatedPlan.courses,
+    } as unknown as StudyPlan;
   }
 
   async delete(id: number): Promise<void> {
