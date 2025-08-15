@@ -66,7 +66,7 @@ export class InvoiceRepositoryImpl implements InvoiceRepository {
   async update(id: number, invoice: Partial<Invoice>): Promise<Invoice> {
     return this.prisma.invoice.update({
       where: { id },
-      data: invoice,
+      data: invoice as any,
     });
   }
 

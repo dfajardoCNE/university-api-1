@@ -10,7 +10,7 @@
 
 API RESTful para el sistema de gestión universitaria desarrollada con arquitectura limpia.
 
-[Características](#características) • [Instalación](#instalación) • [Uso](#ejecución) • [Documentación](#documentación-api) • [Licencia](#licencia)
+[Características](#características) • [Instalación](#instalación) • [Uso](#ejecución) • [Despliegue](#despliegue) • [Documentación](#documentación-api) • [Licencia](#licencia)
 
 </div>
 
@@ -29,6 +29,28 @@ Este proyecto implementa una API RESTful para la gestión de una universidad, si
 | **Autenticación** | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=json-web-tokens&logoColor=white) | v9.x |
 | **Documentación** | ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black) | v6.x |
 
+## 🚀 Despliegue
+
+El proyecto incluye varios scripts para facilitar el despliegue en diferentes entornos, incluyendo Vercel.
+
+### Scripts de Despliegue
+
+```bash
+# Despliegue interactivo (selección de base de datos)
+npm run deploy
+
+# Despliegue específico por tipo de base de datos
+npm run deploy:sqlite
+npm run deploy:postgresql
+npm run deploy:mysql
+npm run deploy:sqlserver
+
+# Despliegue automático para Vercel
+npm run vercel-deploy
+```
+
+Para más información sobre los scripts de despliegue, consulta el archivo [DEPLOYMENT_SCRIPTS.md](./DEPLOYMENT_SCRIPTS.md).
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -38,6 +60,7 @@ university-api/
 ├── 📄 vercel.json            # Configuración de Vercel
 ├── 📄 DATABASE_SETUP.md      # Guía de configuración de BD
 ├── 📄 VERCEL_DEPLOYMENT.md   # Guía de despliegue en Vercel
+├── 📄 DEPLOYMENT_SCRIPTS.md  # Guía de scripts de despliegue
 ├── 📄 package.json           # Dependencias y scripts
 ├── 📄 main.ts               # Punto de entrada de la aplicación
 ├── 📄 app.module.ts         # Módulo principal

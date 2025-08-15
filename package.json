@@ -8,6 +8,7 @@
   "scripts": {
     "build": "nest build",
     "vercel-build": "node scripts/vercel-build.js",
+    "vercel-deploy": "node scripts/vercel-deploy.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -28,12 +29,20 @@
     "db:config:postgresql": "node -e \"require('./scripts/setup-database-auto.js')('postgresql')\"",
     "db:config:mysql": "node -e \"require('./scripts/setup-database-auto.js')('mysql')\"",
     "db:config:sqlserver": "node -e \"require('./scripts/setup-database-auto.js')('sqlserver')\"",
+    "env:setup": "node scripts/setup-env.js",
+
     "prisma:generate": "prisma generate --schema=infrastructure/database/prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=infrastructure/database/prisma/schema.prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema=infrastructure/database/prisma/schema.prisma",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node infrastructure/database/prisma/seed.ts",
     "prisma:apply-triggers": "node infrastructure/database/prisma/apply-triggers.js",
-    "db:setup": "npm run prisma:migrate && npm run prisma:generate && npm run prisma:seed && npm run prisma:apply-triggers"
+    "db:setup": "npm run prisma:migrate && npm run prisma:generate && npm run prisma:seed && npm run prisma:apply-triggers",
+    "deploy": "node scripts/deploy.js",
+    "deploy:sqlite": "node scripts/deploy-sqlite.js",
+    "deploy:postgresql": "node scripts/deploy-postgresql.js",
+    "deploy:mysql": "node scripts/deploy-mysql.js",
+    "deploy:sqlserver": "node scripts/deploy-sqlserver.js"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
