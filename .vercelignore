@@ -8,11 +8,6 @@ test
 # Build files
 *.tsbuildinfo
 
-# Environment files
-.env.local
-.env.development
-.env.test
-
 # Logs
 logs
 *.log
@@ -23,7 +18,6 @@ yarn-error.log*
 # Runtime data
 pids
 *.pid
-*.seed
 *.pid.lock
 
 # Coverage directory used by tools like istanbul
@@ -52,25 +46,6 @@ Thumbs.db
 # Documentation
 *.md
 README*
-
-# Database files (for SQLite)
-*.db
-*.sqlite
-*.sqlite3
-
-# Prisma
-prisma/migrations
-
-# Scripts (except build scripts)
-scripts/setup-database.js
-scripts/setup-database-auto.js
-
-# Schema templates
-infrastructure/database/prisma/schemas/
-
-# TypeScript config
-tsconfig.json
-tsconfig.build.json
 
 # ESLint and Prettier
 .eslintrc.js
