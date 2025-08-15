@@ -6,4 +6,6 @@ export class User {
   roleId: number;
   createdAt: Date;
   lastLogin?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }

@@ -13,6 +13,7 @@ import { GetApplicationsByStatusUseCase } from '../../../domain/use-cases/applic
 import { CreateApplicationUseCase } from '../../../domain/use-cases/application/create-application.use-case';
 import { UpdateApplicationUseCase } from '../../../domain/use-cases/application/update-application.use-case';
 import { DeleteApplicationUseCase } from '../../../domain/use-cases/application/delete-application.use-case';
+import { ApplicationMapper } from '../../../application/mappers/application.mapper';
 
 // Import cache interceptor and pagination helper
 import { CacheInterceptor } from '@nestjs/cache-manager';
@@ -49,9 +50,10 @@ export class ApplicationController {
     } else {
       applications = await this.getAllApplicationsUseCase.execute();
     }
+    const mappedApplications = ApplicationMapper.toResponseDtoArray(applications);
     const pageNum = page ? parseInt(page) : undefined;
     const limitNum = limit ? parseInt(limit) : undefined;
-    return paginate(applications, pageNum, limitNum);
+    return paginate(mappedApplications, pageNum, limitNum);
   }
 
   @Get('person/:personId')
@@ -66,9 +68,10 @@ export class ApplicationController {
     @Query('limit') limit?: string,
   ): Promise<ApplicationResponseDto[]> {
     const applications = await this.getApplicationsByPersonUseCase.execute(+personId);
+    const mappedApplications = ApplicationMapper.toResponseDtoArray(applications);
     const pageNum = page ? parseInt(page) : undefined;
     const limitNum = limit ? parseInt(limit) : undefined;
-    return paginate(applications, pageNum, limitNum);
+    return paginate(mappedApplications, pageNum, limitNum);
   }
 
   @Get(':id')
@@ -78,7 +81,8 @@ export class ApplicationController {
   @ApiResponse({ status: 200, description: 'Solicitud encontrada', type: ApplicationResponseDto })
   @ApiResponse({ status: 404, description: 'Solicitud no encontrada' })
   async findOne(@Param('id') id: string): Promise<ApplicationResponseDto> {
-    return this.getApplicationByIdUseCase.execute(+id);
+    const application = await this.getApplicationByIdUseCase.execute(+id);
+    return ApplicationMapper.toResponseDto(application);
   }
 
   @Post()
@@ -87,7 +91,8 @@ export class ApplicationController {
   @ApiOperation({ summary: 'Crear una nueva solicitud' })
   @ApiResponse({ status: 201, description: 'Solicitud creada', type: ApplicationResponseDto })
   async create(@Body() createApplicationDto: CreateApplicationDto): Promise<ApplicationResponseDto> {
-    return this.createApplicationUseCase.execute(createApplicationDto);
+    const application = await this.createApplicationUseCase.execute(createApplicationDto);
+    return ApplicationMapper.toResponseDto(application);
   }
 
   @Put(':id')
@@ -101,7 +106,8 @@ export class ApplicationController {
     @Param('id') id: string,
     @Body() updateApplicationDto: UpdateApplicationDto,
   ): Promise<ApplicationResponseDto> {
-    return this.updateApplicationUseCase.execute(+id, updateApplicationDto);
+    const application = await this.updateApplicationUseCase.execute(+id, updateApplicationDto);
+    return ApplicationMapper.toResponseDto(application);
   }
 
   @Delete(':id')

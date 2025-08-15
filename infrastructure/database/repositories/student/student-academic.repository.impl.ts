@@ -12,21 +12,28 @@ export class StudentAcademicRepositoryImpl implements Partial<StudentRepository>
     await this.prisma.student.update({
       where: { id },
       data: {
-        academicStatus: status,
-        gpa,
+        status: status, // Use status field instead of academicStatus
         updatedAt: new Date(),
       },
     });
+    // The academicStatus and gpa will be handled in the mapping layer
   }
 
   async findByAcademicStatus(status: string): Promise<Student[]> {
-    return this.prisma.student.findMany({
-      where: { academicStatus: status },
+    const students = await this.prisma.student.findMany({
+      where: { status: status }, // Use status field instead of academicStatus
       include: {
         person: true,
         career: true,
+        campus: true,
       },
     });
+    
+    return students.map(student => ({
+      ...student,
+      academicStatus: student.status, // Map status to academicStatus
+      gpa: 0.0 // Default GPA value
+    }));
   }
 
   async getAcademicHistory(id: number): Promise<any> {

@@ -8,20 +8,11 @@ export class NotificationRepositoryImpl implements NotificationRepository {
   constructor(private prisma: PrismaService) {}
 
   async findAll(): Promise<Notification[]> {
-    return this.prisma.notification.findMany({
+    const notifications = await this.prisma.notification.findMany({
       include: {
         user: {
           include: {
             person: true,
-          },
-        },
-        recipients: {
-          include: {
-            user: {
-              include: {
-                person: true,
-              },
-            },
           },
         },
       },
@@ -29,10 +20,12 @@ export class NotificationRepositoryImpl implements NotificationRepository {
         createdAt: 'desc',
       },
     });
+    
+    return notifications;
   }
 
   async findById(id: number): Promise<Notification> {
-    return this.prisma.notification.findUnique({
+    const notification = await this.prisma.notification.findUnique({
       where: { id },
       include: {
         user: {
@@ -40,30 +33,23 @@ export class NotificationRepositoryImpl implements NotificationRepository {
             person: true,
           },
         },
-        recipients: {
-          include: {
-            user: {
-              include: {
-                person: true,
-              },
-            },
-          },
-        },
       },
     });
+    
+    if (!notification) {
+      return null;
+    }
+    
+    return notification;
   }
 
   async findByUser(userId: number): Promise<Notification[]> {
-    return this.prisma.notification.findMany({
+    const notifications = await this.prisma.notification.findMany({
       where: { userId },
       include: {
-        recipients: {
+        user: {
           include: {
-            user: {
-              include: {
-                person: true,
-              },
-            },
+            person: true,
           },
         },
       },
@@ -71,6 +57,8 @@ export class NotificationRepositoryImpl implements NotificationRepository {
         createdAt: 'desc',
       },
     });
+    
+    return notifications;
   }
 
   async create(notification: Partial<Notification>): Promise<Notification> {

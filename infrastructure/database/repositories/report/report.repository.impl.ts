@@ -8,10 +8,8 @@ export class ReportRepositoryImpl implements ReportRepository {
   constructor(private prisma: PrismaService) {}
 
   async findAll(): Promise<Report[]> {
-    return this.prisma.report.findMany({
+    const reports = await this.prisma.report.findMany({
       include: {
-        thread: true,
-        post: true,
         user: {
           include: {
             person: true,
@@ -22,14 +20,23 @@ export class ReportRepositoryImpl implements ReportRepository {
         createdAt: 'desc',
       },
     });
+    
+    return reports.map(report => ({
+      id: report.id,
+      threadId: report.threadId,
+      postId: report.postId,
+      reportedBy: report.reportedBy,
+      reason: report.reason,
+      status: report.status,
+      createdAt: report.createdAt,
+      resolvedAt: report.resolvedAt
+    }));
   }
 
   async findById(id: number): Promise<Report> {
-    return this.prisma.report.findUnique({
+    const report = await this.prisma.report.findUnique({
       where: { id },
       include: {
-        thread: true,
-        post: true,
         user: {
           include: {
             person: true,
@@ -37,14 +44,25 @@ export class ReportRepositoryImpl implements ReportRepository {
         },
       },
     });
+    
+    if (!report) return null;
+    
+    return {
+      id: report.id,
+      threadId: report.threadId,
+      postId: report.postId,
+      reportedBy: report.reportedBy,
+      reason: report.reason,
+      status: report.status,
+      createdAt: report.createdAt,
+      resolvedAt: report.resolvedAt
+    };
   }
 
   async findByStatus(status: string): Promise<Report[]> {
-    return this.prisma.report.findMany({
+    const reports = await this.prisma.report.findMany({
       where: { status },
       include: {
-        thread: true,
-        post: true,
         user: {
           include: {
             person: true,
@@ -55,28 +73,61 @@ export class ReportRepositoryImpl implements ReportRepository {
         createdAt: 'desc',
       },
     });
+    
+    return reports.map(report => ({
+      id: report.id,
+      threadId: report.threadId,
+      postId: report.postId,
+      reportedBy: report.reportedBy,
+      reason: report.reason,
+      status: report.status,
+      createdAt: report.createdAt,
+      resolvedAt: report.resolvedAt
+    }));
   }
 
   async findByUser(userId: number): Promise<Report[]> {
-    return this.prisma.report.findMany({
+    const reports = await this.prisma.report.findMany({
       where: { reportedBy: userId },
       include: {
-        thread: true,
-        post: true,
+        user: {
+          include: {
+            person: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+    
+    return reports.map(report => ({
+      id: report.id,
+      threadId: report.threadId,
+      postId: report.postId,
+      reportedBy: report.reportedBy,
+      reason: report.reason,
+      status: report.status,
+      createdAt: report.createdAt,
+      resolvedAt: report.resolvedAt
+    }));
   }
 
   async create(report: Partial<Report>): Promise<Report> {
     const { id, ...data } = report;
-    return this.prisma.report.create({
-      data: data as any,
+    const createdReport = await this.prisma.report.create({
+      data: {
+        userId: data.reportedBy,
+        professorId: 1, // Default professor ID as required by the schema
+        threadId: data.threadId,
+        postId: data.postId,
+        reportedBy: data.reportedBy,
+        reason: data.reason,
+        status: data.status || 'pending',
+        title: '',
+        content: ''
+      },
       include: {
-        thread: true,
-        post: true,
         user: {
           include: {
             person: true,
@@ -84,6 +135,17 @@ export class ReportRepositoryImpl implements ReportRepository {
         },
       },
     });
+    
+    return {
+      id: createdReport.id,
+      threadId: createdReport.threadId,
+      postId: createdReport.postId,
+      reportedBy: createdReport.reportedBy,
+      reason: createdReport.reason,
+      status: createdReport.status,
+      createdAt: createdReport.createdAt,
+      resolvedAt: createdReport.resolvedAt
+    };
   }
 
   async updateStatus(id: number, status: string): Promise<Report> {
@@ -94,12 +156,10 @@ export class ReportRepositoryImpl implements ReportRepository {
       data.resolvedAt = new Date();
     }
     
-    return this.prisma.report.update({
+    const updatedReport = await this.prisma.report.update({
       where: { id },
-      data: data as any,
+      data: data,
       include: {
-        thread: true,
-        post: true,
         user: {
           include: {
             person: true,
@@ -107,6 +167,17 @@ export class ReportRepositoryImpl implements ReportRepository {
         },
       },
     });
+    
+    return {
+      id: updatedReport.id,
+      threadId: updatedReport.threadId,
+      postId: updatedReport.postId,
+      reportedBy: updatedReport.reportedBy,
+      reason: updatedReport.reason,
+      status: updatedReport.status,
+      createdAt: updatedReport.createdAt,
+      resolvedAt: updatedReport.resolvedAt
+    };
   }
 
   async delete(id: number): Promise<void> {

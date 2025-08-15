@@ -1,5 +1,5 @@
-// This is your Prisma schema file for SQLite
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Este es tu archivo de esquema de Prisma para SQLite
+// Aprende más sobre él en la documentación: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -10,67 +10,71 @@ datasource db {
   url      = env("DATABASE_URL_SQLITE")
 }
 
-// 1. UNIVERSIDAD, FACULTADES Y DEPARTAMENTOS
+// ###############################################################
+// # 1. UNIVERSIDAD, FACULTADES Y DEPARTAMENTOS
+// ###############################################################
 model University {
-  id          Int       @id @default(autoincrement())
-  name        String
-  country     String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
-  deletedAt   DateTime?
+  id        Int       @id @default(autoincrement())
+  name      String
+  country   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
 
   // Relaciones
-  faculties   Faculty[]
-  campuses    Campus[]
+  faculties Faculty[]
+  campuses  Campus[]
 
   @@map("university")
 }
 
 model Faculty {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   universityId Int
   name         String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime? @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt
   deletedAt    DateTime?
 
   // Relaciones
-  university   University @relation(fields: [universityId], references: [id])
-  departments  Department[]
+  university  University   @relation(fields: [universityId], references: [id])
+  departments Department[]
 
   @@map("faculty")
   @@index([universityId])
 }
 
 model Department {
-  id          Int       @id @default(autoincrement())
-  facultyId   Int
-  name        String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
-  deletedAt   DateTime?
+  id        Int       @id @default(autoincrement())
+  facultyId Int
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
 
   // Relaciones
-  faculty     Faculty   @relation(fields: [facultyId], references: [id])
-  careers     Career[]
+  faculty             Faculty               @relation(fields: [facultyId], references: [id])
+  careers             Career[]
   administrativeStaff AdministrativeStaff[]
 
   @@map("department")
   @@index([facultyId])
 }
 
-// 2. CAMPUS, AULAS Y HORARIOS
+// ###############################################################
+// # 2. CAMPUS, AULAS Y HORARIOS
+// ###############################################################
 model Campus {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   universityId Int
   name         String
   location     String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime? @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt
   deletedAt    DateTime?
 
   // Relaciones
-  university   University @relation(fields: [universityId], references: [id])
+  university   University     @relation(fields: [universityId], references: [id])
   classrooms   Classroom[]
   students     Student[]
   careerCampus CareerCampus[]
@@ -80,17 +84,17 @@ model Campus {
 }
 
 model Classroom {
-  id         Int       @id @default(autoincrement())
-  campusId   Int
-  name       String
-  capacity   Int
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt
-  deletedAt  DateTime?
+  id        Int       @id @default(autoincrement())
+  campusId  Int
+  name      String
+  capacity  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
 
   // Relaciones
-  campus     Campus    @relation(fields: [campusId], references: [id])
-  sections   Section[]
+  campus    Campus    @relation(fields: [campusId], references: [id])
+  sections  Section[]
 
   @@map("classroom")
   @@index([campusId])
@@ -105,9 +109,9 @@ model Term {
   updatedAt DateTime? @updatedAt
 
   // Relaciones
-  sections  Section[]
+  sections        Section[]
   academicRecords AcademicRecord[]
-  enrollments Enrollment[]
+  enrollments     Enrollment[]
 
   @@map("term")
 }
@@ -125,23 +129,23 @@ model SessionTime {
   @@map("session_time")
 }
 
-// 3. CARRERAS, CURSOS Y PRERREQUISITOS
+// ###############################################################
+// # 3. CARRERAS, CURSOS Y PRERREQUISITOS
+// ###############################################################
 model Career {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   departmentId Int?
   name         String
   description  String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime? @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt
 
   // Relaciones
-  department   Department? @relation(fields: [departmentId], references: [id])
+  department   Department?    @relation(fields: [departmentId], references: [id])
   courses      Course[]
   students     Student[]
   applications Application[]
   careerCampus CareerCampus[]
-
-  // Relación con planes de estudio
   studyPlans   StudyPlan[]
 
   @@map("career")
@@ -149,38 +153,38 @@ model Career {
 }
 
 model CareerCampus {
-  careerId  Int
-  campusId  Int
+  careerId Int
+  campusId Int
 
   // Relaciones
-  career    Career @relation(fields: [careerId], references: [id])
-  campus    Campus @relation(fields: [campusId], references: [id])
+  career Career @relation(fields: [careerId], references: [id])
+  campus Campus @relation(fields: [campusId], references: [id])
 
   @@id([careerId, campusId])
   @@map("career_campus")
 }
 
 model Course {
-  id          Int       @id @default(autoincrement())
-  careerId    Int
-  code        String    @unique
-  name        String
-  credits     Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
+  id        Int      @id @default(autoincrement())
+  careerId  Int
+  code      String   @unique
+  name      String
+  credits   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 
   // Relaciones
-  career      Career    @relation(fields: [careerId], references: [id])
-  sections    Section[]
-  exams       Exam[]
-  practices   Practice[]
-  assignments Assignment[]
-  academicRecords AcademicRecord[]
+  career           Career             @relation(fields: [careerId], references: [id])
+  sections         Section[]
+  exams            Exam[]
+  practices        Practice[]
+  assignments      Assignment[]
+  academicRecords  AcademicRecord[]
   studyPlanCourses StudyPlanCourse[]
 
   // Auto-relación para prerrequisitos
-  prerequisites    CoursePrerequisite[] @relation("CourseToPrerequisite")
-  prerequisiteFor  CoursePrerequisite[] @relation("PrerequisiteToCourse")
+  prerequisites   CoursePrerequisite[] @relation("CourseToPrerequisite")
+  prerequisiteFor CoursePrerequisite[] @relation("PrerequisiteToCourse")
 
   @@map("course")
   @@index([careerId])
@@ -191,8 +195,8 @@ model CoursePrerequisite {
   prerequisiteId Int
 
   // Relaciones
-  course         Course @relation("CourseToPrerequisite", fields: [courseId], references: [id])
-  prerequisite   Course @relation("PrerequisiteToCourse", fields: [prerequisiteId], references: [id])
+  course       Course @relation("CourseToPrerequisite", fields: [courseId], references: [id])
+  prerequisite Course @relation("PrerequisiteToCourse", fields: [prerequisiteId], references: [id])
 
   @@id([courseId, prerequisiteId])
   @@map("course_prerequisite")
@@ -200,7 +204,9 @@ model CoursePrerequisite {
   @@index([prerequisiteId])
 }
 
-// 4. PERSONAS, USUARIOS Y ROLES
+// ###############################################################
+// # 4. PERSONAS, USUARIOS Y ROLES
+// ###############################################################
 model Person {
   id        Int       @id @default(autoincrement())
   firstName String
@@ -213,9 +219,9 @@ model Person {
   deletedAt DateTime?
 
   // Relaciones
-  user      User?
-  professor Professor?
-  student   Student?
+  user                User?
+  professor           Professor?
+  student             Student?
   administrativeStaff AdministrativeStaff?
 
   @@map("person")
@@ -232,14 +238,14 @@ model User {
   deletedAt    DateTime?
 
   // Relaciones
-  person       Person    @relation(fields: [personId], references: [id])
-  role         Role      @relation(fields: [roleId], references: [id])
-  posts        Post[]
-  notifications Notification[]
+  person         Person          @relation(fields: [personId], references: [id])
+  role           Role            @relation(fields: [roleId], references: [id])
+  posts          Post[]
+  notifications  Notification[]
   teacherRatings TeacherRating[]
-  threads      Thread[]
-  applications Application[]
-  reports      Report[]
+  threads        Thread[]
+  applications   Application[]
+  reports        Report[]
 
   @@map("user")
   @@index([personId])
@@ -254,12 +260,14 @@ model Role {
   updatedAt   DateTime? @updatedAt
 
   // Relaciones
-  users       User[]
+  users User[]
 
   @@map("role")
 }
 
-// 5. PROFESORES Y ESTUDIANTES
+// ###############################################################
+// # 5. PROFESORES Y ESTUDIANTES
+// ###############################################################
 model Professor {
   id        Int       @id @default(autoincrement())
   personId  Int       @unique
@@ -269,34 +277,35 @@ model Professor {
   deletedAt DateTime?
 
   // Relaciones
-  person    Person    @relation(fields: [personId], references: [id])
-  sections  Section[]
-  practices Practice[]
-  assignments Assignment[]
-  reports   Report[]
+  person         Person          @relation(fields: [personId], references: [id])
+  sections       Section[]
+  reports        Report[]
+  teacherRatings TeacherRating[]
 
   @@map("professor")
   @@index([personId])
 }
 
 model Student {
-  id            Int       @id @default(autoincrement())
-  personId      Int       @unique
-  careerId      Int
-  campusId      Int
+  id             Int        @id @default(autoincrement())
+  personId       Int        @unique
+  careerId       Int
+  campusId       Int
   enrollmentDate DateTime
-  status        String    @default("activo")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime? @updatedAt
-  deletedAt     DateTime?
+  status         String     @default("activo")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime?  @updatedAt
+  deletedAt      DateTime?
 
   // Relaciones
-  person        Person    @relation(fields: [personId], references: [id])
-  career        Career    @relation(fields: [careerId], references: [id])
-  campus        Campus    @relation(fields: [campusId], references: [id])
-  enrollments   Enrollment[]
+  person          Person           @relation(fields: [personId], references: [id])
+  career          Career           @relation(fields: [careerId], references: [id])
+  campus          Campus           @relation(fields: [campusId], references: [id])
+  enrollments     Enrollment[]
   academicRecords AcademicRecord[]
-  studyPlans    StudyPlan[]
+  studyPlans      StudyPlan[]
+  submissions     Submission[]
+  invoices        Invoice[]
 
   @@map("student")
   @@index([personId])
@@ -304,30 +313,30 @@ model Student {
   @@index([campusId])
 }
 
-// 6. SECCIONES, MATRÍCULAS Y REGISTROS ACADÉMICOS
+// ###############################################################
+// # 6. SECCIONES, MATRÍCULAS Y REGISTROS ACADÉMICOS
+// ###############################################################
 model Section {
-  id            Int       @id @default(autoincrement())
+  id            Int        @id @default(autoincrement())
   courseId      Int
   termId        Int
   sessionTimeId Int
   professorId   Int
   classroomId   Int
-  capacity      Int       @default(30)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime? @updatedAt
+  capacity      Int        @default(30)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime?  @updatedAt
   deletedAt     DateTime?
 
   // Relaciones
-  course        Course    @relation(fields: [courseId], references: [id])
-  term          Term      @relation(fields: [termId], references: [id])
-  sessionTime   SessionTime @relation(fields: [sessionTimeId], references: [id])
-  professor     Professor @relation(fields: [professorId], references: [id])
-  classroom     Classroom @relation(fields: [classroomId], references: [id])
-  enrollments   Enrollment[]
-  academicRecords AcademicRecord[]
-  practices     Practice[]
-  assignments   Assignment[]
-  exams         Exam[]
+  course          Course         @relation(fields: [courseId], references: [id])
+  term            Term           @relation(fields: [termId], references: [id])
+  sessionTime     SessionTime    @relation(fields: [sessionTimeId], references: [id])
+  professor       Professor      @relation(fields: [professorId], references: [id])
+  classroom       Classroom      @relation(fields: [classroomId], references: [id])
+  enrollments     Enrollment[]
+  academicRecords AcademicRecord[] // CORRECCIÓN: Esta relación ahora es válida.
+  exams           Exam[]
 
   @@map("section")
   @@index([courseId])
@@ -348,9 +357,9 @@ model Enrollment {
   deletedAt DateTime?
 
   // Relaciones
-  student   Student   @relation(fields: [studentId], references: [id])
-  section   Section   @relation(fields: [sectionId], references: [id])
-  term      Term      @relation(fields: [termId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+  section Section @relation(fields: [sectionId], references: [id])
+  term    Term    @relation(fields: [termId], references: [id])
 
   @@map("enrollment")
   @@unique([studentId, sectionId, termId])
@@ -364,6 +373,7 @@ model AcademicRecord {
   studentId Int
   courseId  Int
   termId    Int
+  sectionId Int // CORRECCIÓN: Se añadió el campo para relacionar con Section.
   grade     Float?
   status    String    @default("en_curso")
   createdAt DateTime  @default(now())
@@ -373,15 +383,19 @@ model AcademicRecord {
   student   Student   @relation(fields: [studentId], references: [id])
   course    Course    @relation(fields: [courseId], references: [id])
   term      Term      @relation(fields: [termId], references: [id])
+  section   Section   @relation(fields: [sectionId], references: [id]) // CORRECCIÓN: Se añadió la relación inversa.
 
   @@map("academic_record")
-  @@unique([studentId, courseId, termId])
+  @@unique([studentId, sectionId]) // CORRECCIÓN: Se actualizó la restricción de unicidad para mayor precisión.
   @@index([studentId])
   @@index([courseId])
   @@index([termId])
+  @@index([sectionId])
 }
 
-// 7. EXÁMENES, TAREAS Y PRÁCTICAS
+// ###############################################################
+// # 7. EXÁMENES, TAREAS Y PRÁCTICAS
+// ###############################################################
 model Exam {
   id        Int       @id @default(autoincrement())
   courseId  Int
@@ -395,8 +409,8 @@ model Exam {
   deletedAt DateTime?
 
   // Relaciones
-  course    Course    @relation(fields: [courseId], references: [id])
-  section   Section   @relation(fields: [sectionId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id])
+  section     Section      @relation(fields: [sectionId], references: [id])
   submissions Submission[]
 
   @@map("exam")
@@ -405,18 +419,18 @@ model Exam {
 }
 
 model Assignment {
-  id        Int       @id @default(autoincrement())
-  courseId  Int
-  title     String
+  id          Int       @id @default(autoincrement())
+  courseId    Int
+  title       String
   description String?
-  dueDate   DateTime
-  maxScore  Float     @default(100)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  dueDate     DateTime
+  maxScore    Float     @default(100)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
 
   // Relaciones
-  course    Course    @relation(fields: [courseId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id])
   submissions Submission[]
 
   @@map("assignment")
@@ -424,18 +438,18 @@ model Assignment {
 }
 
 model Practice {
-  id        Int       @id @default(autoincrement())
-  courseId  Int
-  title     String
+  id          Int       @id @default(autoincrement())
+  courseId    Int
+  title       String
   description String?
-  dueDate   DateTime
-  maxScore  Float     @default(100)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  dueDate     DateTime
+  maxScore    Float     @default(100)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
 
   // Relaciones
-  course    Course    @relation(fields: [courseId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id])
   submissions Submission[]
 
   @@map("practice")
@@ -443,23 +457,23 @@ model Practice {
 }
 
 model Submission {
-  id          Int       @id @default(autoincrement())
-  studentId   Int
-  examId      Int?
+  id           Int         @id @default(autoincrement())
+  studentId    Int
+  examId       Int?
   assignmentId Int?
-  practiceId  Int?
-  content     String?
-  score       Float?
-  feedback    String?
-  submittedAt DateTime  @default(now())
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
+  practiceId   Int?
+  content      String?
+  score        Float?
+  feedback     String?
+  submittedAt  DateTime    @default(now())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt
 
   // Relaciones
-  student     Student   @relation(fields: [studentId], references: [id])
-  exam        Exam?     @relation(fields: [examId], references: [id])
-  assignment  Assignment? @relation(fields: [assignmentId], references: [id])
-  practice    Practice? @relation(fields: [practiceId], references: [id])
+  student    Student     @relation(fields: [studentId], references: [id])
+  exam       Exam?       @relation(fields: [examId], references: [id])
+  assignment Assignment? @relation(fields: [assignmentId], references: [id])
+  practice   Practice?   @relation(fields: [practiceId], references: [id])
 
   @@map("submission")
   @@index([studentId])
@@ -468,9 +482,12 @@ model Submission {
   @@index([practiceId])
 }
 
-// 8. PLANES DE ESTUDIO
+// ###############################################################
+// # 8. PLANES DE ESTUDIO
+// ###############################################################
 model StudyPlan {
   id        Int       @id @default(autoincrement())
+  studentId Int
   careerId  Int
   name      String
   version   String
@@ -479,10 +496,12 @@ model StudyPlan {
   deletedAt DateTime?
 
   // Relaciones
-  career    Career    @relation(fields: [careerId], references: [id])
-  courses   StudyPlanCourse[]
+  student Student           @relation(fields: [studentId], references: [id])
+  career  Career            @relation(fields: [careerId], references: [id])
+  courses StudyPlanCourse[]
 
   @@map("study_plan")
+  @@index([studentId])
   @@index([careerId])
 }
 
@@ -494,15 +513,18 @@ model StudyPlanCourse {
   createdAt   DateTime  @default(now())
 
   // Relaciones
-  studyPlan   StudyPlan @relation(fields: [studyPlanId], references: [id])
-  course      Course    @relation(fields: [courseId], references: [id])
+  studyPlan StudyPlan @relation(fields: [studyPlanId], references: [id])
+  course    Course    @relation(fields: [courseId], references: [id])
 
   @@id([studyPlanId, courseId])
+  @@map("StudyPlanCourse")
   @@index([studyPlanId])
   @@index([courseId])
 }
 
-// 9. NOTIFICACIONES Y APLICACIONES
+// ###############################################################
+// # 9. NOTIFICACIONES Y APLICACIONES
+// ###############################################################
 model Notification {
   id        Int       @id @default(autoincrement())
   userId    Int
@@ -515,7 +537,7 @@ model Notification {
   deletedAt DateTime?
 
   // Relaciones
-  user      User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@map("notification")
   @@index([userId])
@@ -532,24 +554,26 @@ model Application {
   deletedAt DateTime?
 
   // Relaciones
-  user      User      @relation(fields: [userId], references: [id])
-  career    Career    @relation(fields: [careerId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  career Career @relation(fields: [careerId], references: [id])
 
   @@map("application")
   @@index([userId])
   @@index([careerId])
 }
 
-// 10. REPORTES Y CALIFICACIONES DE PROFESORES
+// ###############################################################
+// # 10. REPORTES Y CALIFICACIONES DE PROFESORES
+// ###############################################################
 model Report {
-  id        Int       @id @default(autoincrement())
-  userId    Int
+  id          Int       @id @default(autoincrement())
+  userId      Int
   professorId Int
-  title     String
-  content   String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  title       String
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
 
   // Relaciones
   user      User      @relation(fields: [userId], references: [id])
@@ -571,15 +595,17 @@ model TeacherRating {
   deletedAt   DateTime?
 
   // Relaciones
-  user        User      @relation(fields: [userId], references: [id])
-  professor   Professor @relation(fields: [professorId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  professor Professor @relation(fields: [professorId], references: [id])
 
   @@map("teacher_rating")
   @@index([userId])
   @@index([professorId])
 }
 
-// 11. FOROS Y POSTS
+// ###############################################################
+// # 11. FOROS Y POSTS
+// ###############################################################
 model Thread {
   id        Int       @id @default(autoincrement())
   userId    Int
@@ -590,8 +616,8 @@ model Thread {
   deletedAt DateTime?
 
   // Relaciones
-  user      User      @relation(fields: [userId], references: [id])
-  posts     Post[]
+  user  User   @relation(fields: [userId], references: [id])
+  posts Post[]
 
   @@map("thread")
   @@index([userId])
@@ -607,27 +633,29 @@ model Post {
   deletedAt DateTime?
 
   // Relaciones
-  user      User      @relation(fields: [userId], references: [id])
-  thread    Thread    @relation(fields: [threadId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  thread Thread @relation(fields: [threadId], references: [id])
 
   @@map("post")
   @@index([userId])
   @@index([threadId])
 }
 
-// 12. PERSONAL ADMINISTRATIVO
+// ###############################################################
+// # 12. PERSONAL ADMINISTRATIVO
+// ###############################################################
 model AdministrativeStaff {
-  id        Int       @id @default(autoincrement())
-  personId  Int       @unique
+  id           Int       @id @default(autoincrement())
+  personId     Int       @unique
   departmentId Int
-  position  String
-  hireDate  DateTime
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  position     String
+  hireDate     DateTime
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  deletedAt   DateTime?
 
   // Relaciones
-  person    Person    @relation(fields: [personId], references: [id])
+  person     Person     @relation(fields: [personId], references: [id])
   department Department @relation(fields: [departmentId], references: [id])
 
   @@map("administrative_staff")
@@ -635,22 +663,26 @@ model AdministrativeStaff {
   @@index([departmentId])
 }
 
-// 13. CALENDARIO ACADÉMICO
+// ###############################################################
+// # 13. CALENDARIO ACADÉMICO
+// ###############################################################
 model AcademicCalendar {
-  id        Int       @id @default(autoincrement())
-  title     String
-  startDate DateTime
-  endDate   DateTime
-  type      String
+  id          Int       @id @default(autoincrement())
+  title       String
+  startDate   DateTime
+  endDate     DateTime
+  type        String
   description String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  deletedAt   DateTime?
 
   @@map("academic_calendar")
 }
 
-// 14. REGISTROS DE PAGO
+// ###############################################################
+// # 14. REGISTROS DE PAGO
+// ###############################################################
 model Invoice {
   id        Int       @id @default(autoincrement())
   studentId Int
@@ -662,25 +694,25 @@ model Invoice {
   deletedAt DateTime?
 
   // Relaciones
-  student   Student   @relation(fields: [studentId], references: [id])
-  payments  Payment[]
+  student  Student   @relation(fields: [studentId], references: [id])
+  payments Payment[]
 
   @@map("invoice")
   @@index([studentId])
 }
 
 model Payment {
-  id        Int       @id @default(autoincrement())
-  invoiceId Int
-  amount    Float
-  paymentDate DateTime
+  id            Int       @id @default(autoincrement())
+  invoiceId     Int
+  amount        Float
+  paymentDate   DateTime
   paymentMethod String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+  deletedAt     DateTime?
 
   // Relaciones
-  invoice   Invoice   @relation(fields: [invoiceId], references: [id])
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
 
   @@map("payment")
   @@index([invoiceId])
