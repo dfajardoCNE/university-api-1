@@ -213,7 +213,7 @@ export class SubmissionRepositoryImpl implements SubmissionRepository {
     const assignmentSubmissions = await this.prisma.submission.findMany({
       where: {
         studentId,
-        grade: null,
+        score: null,
         assignment: {
           courseId: section.courseId
         }
@@ -227,7 +227,7 @@ export class SubmissionRepositoryImpl implements SubmissionRepository {
     const examSubmissions = await this.prisma.submission.findMany({
       where: {
         studentId,
-        grade: null,
+        score: null,
         exam: {
           courseId: section.courseId
         }
@@ -241,7 +241,7 @@ export class SubmissionRepositoryImpl implements SubmissionRepository {
     const practiceSubmissions = await this.prisma.submission.findMany({
       where: {
         studentId,
-        grade: null,
+        score: null,
         practice: {
           courseId: section.courseId
         }
